@@ -14,7 +14,6 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
-# Set up the database connection using DictCursor
 conn = psycopg2.connect(
     dbname=os.getenv('DB_NAME'),
     user=os.getenv('DB_USER'),
@@ -31,12 +30,10 @@ def fetch_seo_data(url):
         response = requests.get(url)
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # Extract SEO elements
         h1_tag = soup.find('h1')
         title_tag = soup.find('title')
         meta_description_tag = soup.find('meta', attrs={'name': 'description'})
 
-        # Extract content
         h1_content = h1_tag.get_text(strip=True) if h1_tag else None
         title_content = title_tag.get_text(strip=True) if title_tag else None
         meta_description = meta_description_tag['content'] if meta_description_tag else None
@@ -58,11 +55,9 @@ def add_url():
         flash('Некорректный URL!', 'error')
         return redirect(url_for('index'))
 
-    # Fetch SEO data
     h1_content, title_content, meta_description = fetch_seo_data(url)
 
     try:
-        # Add URL and SEO data to the database
         cur.execute(
             sql.SQL("INSERT INTO urls (name, created_at, h1_content, title_content, meta_description) VALUES (%s, %s, %s, %s, %s)"),
             [url, datetime.now(), h1_content, title_content, meta_description]
@@ -77,16 +72,14 @@ def add_url():
 
 @app.route('/urls')
 def list_urls():
-    # Fetch all URLs from the database
     cur.execute("SELECT id, name, created_at, h1_content, title_content, meta_description FROM urls ORDER BY created_at DESC")
-    urls = cur.fetchall()  # This will be a list of dictionaries
+    urls = cur.fetchall()
     return render_template('urls.html', urls=urls)
 
 @app.route('/urls/<int:id>')
 def show_url(id):
-    # Fetch specific URL by ID
     cur.execute("SELECT id, name, created_at, h1_content, title_content, meta_description FROM urls WHERE id = %s", [id])
-    url = cur.fetchone()  # This will be a dictionary
+    url = cur.fetchone()
     if not url:
         flash('URL не найден!', 'error')
         return redirect(url_for('list_urls'))
