@@ -34,10 +34,10 @@ def fetch_seo_data(url):
         title_content = title_tag.get_text(strip=True) if title_tag else None
         meta_description = meta_description_tag['content'] if meta_description_tag else None
 
-        return h1_content, title_content, meta_description
+        return response.status_code, h1_content, title_content, meta_description
     except Exception as e:
         flash(f"Ошибка при парсинге страницы: {e}", 'error')
-        return None, None, None
+        return None, None, None, None
 
 @app.route('/')
 def index():
@@ -51,35 +51,45 @@ def add_url():
         flash('Некорректный URL!', 'error')
         return redirect(url_for('index'))
 
-    h1_content, title_content, meta_description = fetch_seo_data(url)
+    status_code, h1_content, title_content, meta_description = fetch_seo_data(url)
 
     try:
+        created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Форматирование времени
+
         cur.execute(
-            sql.SQL("INSERT INTO urls (name, created_at, h1_content, title_content, meta_description) VALUES (%s, %s, %s, %s, %s)"),
-            [url, datetime.now(), h1_content, title_content, meta_description]
+            sql.SQL("INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"),
+            [url, created_at]
+        )
+        url_id = cur.fetchone()['id']
+        conn.commit()
+        flash('URL успешно добавлен!', 'success')
+
+        cur.execute(
+            sql.SQL("INSERT INTO checks (url_id, status_code, h1, title, description, created_at) VALUES (%s, %s, %s, %s, %s, %s)"),
+            [url_id, status_code, h1_content, title_content, meta_description, datetime.now()]
         )
         conn.commit()
-        flash('URL и SEO данные успешно добавлены!', 'success')
+
     except psycopg2.IntegrityError:
         conn.rollback()
         flash('URL уже существует!', 'error')
+        return redirect(url_for('index'))
 
-    return redirect(url_for('index'))
-
-@app.route('/urls')
-def list_urls():
-    cur.execute("SELECT id, name, created_at, h1_content, title_content, meta_description FROM urls ORDER BY created_at DESC")
-    urls = cur.fetchall()
-    return render_template('urls.html', urls=urls)
+    return redirect(url_for('show_url', id=url_id))
 
 @app.route('/urls/<int:id>')
 def show_url(id):
-    cur.execute("SELECT id, name, created_at, h1_content, title_content, meta_description FROM urls WHERE id = %s", [id])
+    cur.execute("SELECT id, name, created_at FROM urls WHERE id = %s", [id])
     url = cur.fetchone()
+
+    cur.execute("SELECT id, status_code, h1, title, description, created_at FROM checks WHERE url_id = %s ORDER BY created_at DESC", [id])
+    checks = cur.fetchall()
+
     if not url:
         flash('URL не найден!', 'error')
-        return redirect(url_for('list_urls'))
-    return render_template('url.html', url=url)
+        return redirect(url_for('index'))
+
+    return render_template('url.html', url=url, checks=checks)
 
 if __name__ == '__main__':
     app.run(debug=True)

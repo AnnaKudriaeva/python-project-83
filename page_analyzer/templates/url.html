@@ -1,41 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Информация о URL</title>
+    <title>Информация о сайте</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <h1>Информация о URL</h1>
-        <table class="table" data-test="url">
+        <h1>Сайт: {{ url['name'] }}</h1>
+        <table class="table">
             <tr>
                 <th>ID:</th>
                 <td>{{ url['id'] }}</td>
             </tr>
             <tr>
-                <th>URL:</th>
+                <th>Имя:</th>
                 <td>{{ url['name'] }}</td>
             </tr>
             <tr>
-                <th>Дата добавления:</th>
+                <th>Дата создания:</th>
                 <td>{{ url['created_at'] }}</td>
             </tr>
-            <tr>
-                <th>H1:</th>
-                <td>{{ url['h1_content'] }}</td>
-            </tr>
-            <tr>
-                <th>Title:</th>
-                <td>{{ url['title_content'] }}</td>
-            </tr>
-            <tr>
-                <th>Meta Description:</th>
-                <td>{{ url['meta_description'] }}</td>
-            </tr>                        
         </table>
-        <a href="{{ url_for('list_urls') }}" class="btn btn-primary">Назад к списку</a>
+
+        <h2>Проверки</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Код ответа</th>
+                    <th>h1</th>
+                    <th>title</th>
+                    <th>description</th>
+                    <th>Дата создания</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for check in checks %}
+                <tr>
+                    <td>{{ check['id'] }}</td>
+                    <td>{{ check['status_code'] }}</td>
+                    <td>{{ check['h1'] }}</td>
+                    <td>{{ check['title'] }}</td>
+                    <td>{{ check['description'] }}</td>
+                    <td>{{ check['created_at'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Назад</a>
     </div>
 </body>
 </html>

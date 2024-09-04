@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <h1>Список URL</h1>
-        <table class="table" data-test="urls">
+        <table class="table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -22,7 +22,7 @@
             </thead>
             <tbody>
                 {% for url in urls %}
-                <tr data-test="url">
+                <tr>
                     <td>{{ url['id'] }}</td>
                     <td><a href="{{ url_for('show_url', id=url['id']) }}">{{ url['name'] }}</a></td>
                     <td>{{ url['created_at'] }}</td>
@@ -30,7 +30,7 @@
                     <td>{{ url['title_content'] }}</td>
                     <td>{{ url['meta_description'] }}</td>
                 </tr>
-                {% endfor %}                           
+                {% endfor %}
             </tbody>
         </table>
     </div>
