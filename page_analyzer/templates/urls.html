@@ -15,6 +15,9 @@
                     <th>ID</th>
                     <th>URL</th>
                     <th>Дата добавления</th>
+                    <th>H1</th>
+                    <th>Title</th>
+                    <th>Meta Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -23,8 +26,11 @@
                     <td>{{ url['id'] }}</td>
                     <td><a href="{{ url_for('show_url', id=url['id']) }}">{{ url['name'] }}</a></td>
                     <td>{{ url['created_at'] }}</td>
+                    <td>{{ url['h1_content'] }}</td>
+                    <td>{{ url['title_content'] }}</td>
+                    <td>{{ url['meta_description'] }}</td>
                 </tr>
-                {% endfor %}                
+                {% endfor %}                           
             </tbody>
         </table>
     </div>

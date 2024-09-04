@@ -12,10 +12,6 @@
         <table class="table" data-test="url">
             <tr>
                 <th>ID:</th>
-                <td>{{ url[0] }}</td>
-            </tr>
-            <tr>
-                <th>ID:</th>
                 <td>{{ url['id'] }}</td>
             </tr>
             <tr>
@@ -25,7 +21,19 @@
             <tr>
                 <th>Дата добавления:</th>
                 <td>{{ url['created_at'] }}</td>
-            </tr>            
+            </tr>
+            <tr>
+                <th>H1:</th>
+                <td>{{ url['h1_content'] }}</td>
+            </tr>
+            <tr>
+                <th>Title:</th>
+                <td>{{ url['title_content'] }}</td>
+            </tr>
+            <tr>
+                <th>Meta Description:</th>
+                <td>{{ url['meta_description'] }}</td>
+            </tr>                        
         </table>
         <a href="{{ url_for('list_urls') }}" class="btn btn-primary">Назад к списку</a>
     </div>

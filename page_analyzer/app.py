@@ -1,26 +1,50 @@
-import os
 from flask import Flask, request, redirect, url_for, render_template, flash
+from bs4 import BeautifulSoup
+import requests
 import psycopg2
-import validators
 from psycopg2 import sql
+from psycopg2.extras import DictCursor
 from dotenv import load_dotenv
 from datetime import datetime
-from psycopg2.extras import DictCursor
+import os
+import validators
 
 load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
+# Set up the database connection using DictCursor
 conn = psycopg2.connect(
     dbname=os.getenv('DB_NAME'),
     user=os.getenv('DB_USER'),
     password=os.getenv('DB_PASSWORD'),
     host=os.getenv('DB_HOST'),
+    port=os.getenv('DB_PORT'),
     cursor_factory=DictCursor
 )
-
 cur = conn.cursor()
+
+def fetch_seo_data(url):
+    """Fetch SEO data from the URL using BeautifulSoup."""
+    try:
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Extract SEO elements
+        h1_tag = soup.find('h1')
+        title_tag = soup.find('title')
+        meta_description_tag = soup.find('meta', attrs={'name': 'description'})
+
+        # Extract content
+        h1_content = h1_tag.get_text(strip=True) if h1_tag else None
+        title_content = title_tag.get_text(strip=True) if title_tag else None
+        meta_description = meta_description_tag['content'] if meta_description_tag else None
+
+        return h1_content, title_content, meta_description
+    except Exception as e:
+        flash(f"Ошибка при парсинге страницы: {e}", 'error')
+        return None, None, None
 
 @app.route('/')
 def index():
@@ -34,14 +58,17 @@ def add_url():
         flash('Некорректный URL!', 'error')
         return redirect(url_for('index'))
 
+    # Fetch SEO data
+    h1_content, title_content, meta_description = fetch_seo_data(url)
+
     try:
-        # Добавление URL в базу данных
+        # Add URL and SEO data to the database
         cur.execute(
-            sql.SQL("INSERT INTO urls (name, created_at) VALUES (%s, %s)"),
-            [url, datetime.now()]
+            sql.SQL("INSERT INTO urls (name, created_at, h1_content, title_content, meta_description) VALUES (%s, %s, %s, %s, %s)"),
+            [url, datetime.now(), h1_content, title_content, meta_description]
         )
         conn.commit()
-        flash('URL успешно добавлен!', 'success')
+        flash('URL и SEO данные успешно добавлены!', 'success')
     except psycopg2.IntegrityError:
         conn.rollback()
         flash('URL уже существует!', 'error')
@@ -51,15 +78,15 @@ def add_url():
 @app.route('/urls')
 def list_urls():
     # Fetch all URLs from the database
-    cur.execute("SELECT id, name, created_at FROM urls ORDER BY created_at DESC")
-    urls = cur.fetchall()  # `urls` will be a list of dictionaries
+    cur.execute("SELECT id, name, created_at, h1_content, title_content, meta_description FROM urls ORDER BY created_at DESC")
+    urls = cur.fetchall()  # This will be a list of dictionaries
     return render_template('urls.html', urls=urls)
 
 @app.route('/urls/<int:id>')
 def show_url(id):
-    # Fetch a specific URL by ID
-    cur.execute("SELECT id, name, created_at FROM urls WHERE id = %s", [id])
-    url = cur.fetchone()  # `url` will be a dictionary
+    # Fetch specific URL by ID
+    cur.execute("SELECT id, name, created_at, h1_content, title_content, meta_description FROM urls WHERE id = %s", [id])
+    url = cur.fetchone()  # This will be a dictionary
     if not url:
         flash('URL не найден!', 'error')
         return redirect(url_for('list_urls'))

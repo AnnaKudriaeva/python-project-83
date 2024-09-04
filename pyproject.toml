@@ -13,6 +13,8 @@ gunicorn = "^22.0.0"
 jinja2 = "^3.1.4"
 psycopg2 = "^2.9.9"
 validators = "^0.33.0"
+beautifulsoup4 = "^4.12.3"
+requests = "^2.32.3"
 
 
 [tool.poetry.group.dev.dependencies]
