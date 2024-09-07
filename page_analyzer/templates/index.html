@@ -8,21 +8,28 @@
 </head>
 <body>
     <div class="container">
-        <h1>Анализатор страниц</h1>
+        <h1 class="mt-4">Анализатор страниц</h1>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                    <div class="alert alert-{{ category }} mt-3">{{ message }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        <form action="{{ url_for('add_url') }}" method="post">
+        
+        <form action="{{ url_for('add_url') }}" method="post" class="mt-4">
             <div class="mb-3">
                 <label for="url" class="form-label">Введите URL</label>
                 <input type="text" class="form-control" id="url" name="url" required>
             </div>
             <button type="submit" class="btn btn-primary">Добавить</button>
         </form>
+        
+        <!-- Ссылка на страницу со всеми добавленными сайтами -->
+        <div class="mt-4">
+            <a href="{{ url_for('show_all_urls') }}" class="btn btn-link">Посмотреть все сайты</a>
+        </div>
     </div>
+
 </body>
 </html>

@@ -77,6 +77,12 @@ def add_url():
 
     return redirect(url_for('show_url', id=url_id))
 
+@app.route('/urls')
+def show_all_urls():
+    cur.execute("SELECT id, name, created_at FROM urls ORDER BY created_at DESC")
+    urls = cur.fetchall()
+    return render_template('urls.html', urls=urls)
+
 @app.route('/urls/<int:id>')
 def show_url(id):
     cur.execute("SELECT id, name, created_at FROM urls WHERE id = %s", [id])
