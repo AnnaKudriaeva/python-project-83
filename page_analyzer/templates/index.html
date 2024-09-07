@@ -25,11 +25,10 @@
             <button type="submit" class="btn btn-primary">Добавить</button>
         </form>
         
-        <!-- Ссылка на страницу со всеми добавленными сайтами -->
         <div class="mt-4">
-            <a href="{{ url_for('show_all_urls') }}" class="btn btn-link">Посмотреть все сайты</a>
+            <a href="{{ url_for('index') }}" class="btn btn-link">Главная страница</a>
+            <a href="{{ url_for('add_url') }}" class="btn btn-link">Посмотреть все сайты</a>
         </div>
     </div>
-
 </body>
 </html>

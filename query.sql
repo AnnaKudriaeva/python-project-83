@@ -1,1 +1,0 @@
-SELECT id, name, created_at, h1_content, title_content, meta_description FROM urls ORDER BY created_at DESC
