@@ -14,11 +14,11 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
-conn = psycopg2.connect(
-    os.getenv('DATABASE_URL'),
-    cursor_factory=DictCursor
-)
-cur = conn.cursor()
+def get_db_connection():
+    return psycopg2.connect(
+        os.getenv('DATABASE_URL'),
+        cursor_factory=DictCursor
+    )
 
 def fetch_seo_data(url):
     """Fetch SEO data from the URL using BeautifulSoup."""
@@ -52,6 +52,9 @@ def add_url():
             flash('Invalid URL!', 'error')
             return redirect(url_for('index'))
 
+        conn = get_db_connection()
+        cur = conn.cursor()
+
         try:
             created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             cur.execute(
@@ -65,9 +68,14 @@ def add_url():
             conn.rollback()
             flash('URL already exists!', 'error')
             return redirect(url_for('index'))
+        finally:
+            cur.close()
+            conn.close()
 
         return redirect(url_for('show_url', id=url_id))
     else:
+        conn = get_db_connection()
+        cur = conn.cursor()
         cur.execute("""
             SELECT urls.id, urls.name, urls.created_at, checks.status_code
             FROM urls
@@ -75,15 +83,22 @@ def add_url():
             ORDER BY urls.created_at DESC
         """)
         urls = cur.fetchall()
+        cur.close()
+        conn.close()
         return render_template('urls.html', urls=urls)
 
 @app.route('/urls/<int:id>', methods=['GET', 'POST'])
 def show_url(id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
     cur.execute("SELECT id, name, created_at FROM urls WHERE id = %s", [id])
     url = cur.fetchone()
 
     if not url:
         flash('URL not found!', 'error')
+        cur.close()
+        conn.close()
         return redirect(url_for('index'))
 
     cur.execute("SELECT id, status_code, h1, title, description, created_at FROM checks WHERE url_id = %s ORDER BY created_at DESC", [id])
@@ -101,9 +116,14 @@ def show_url(id):
         except Exception as e:
             conn.rollback()
             flash(f"Error saving check data: {e}", 'error')
+        finally:
+            cur.close()
+            conn.close()
 
         return redirect(url_for('show_url', id=id))
 
+    cur.close()
+    conn.close()
     return render_template('url.html', url=url, checks=checks)
 
 if __name__ == '__main__':
