@@ -9,6 +9,7 @@ from datetime import datetime
 import os
 import validators
 
+# Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
