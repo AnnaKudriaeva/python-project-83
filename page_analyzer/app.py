@@ -64,7 +64,7 @@ def add_url():
             )
             url_id = cur.fetchone()['id']
             conn.commit()
-            flash('URL added successfully!', 'success')
+            flash('Страница успешно добавлена', 'success')
         except psycopg2.IntegrityError:
             conn.rollback()
             flash('URL already exists!', 'error')
