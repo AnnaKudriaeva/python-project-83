@@ -67,7 +67,7 @@ def add_url():
             flash('Страница успешно добавлена', 'success')
         except psycopg2.IntegrityError:
             conn.rollback()
-            flash('URL already exists!', 'error')
+            flash('Страница уже существует', 'error')
             return redirect(url_for('index'))
         finally:
             cur.close()
