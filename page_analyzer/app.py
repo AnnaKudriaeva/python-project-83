@@ -6,7 +6,7 @@ from psycopg2 import sql
 from psycopg2.extras import DictCursor
 from dotenv import load_dotenv
 from datetime import datetime
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse
 import os
 import validators
 
@@ -57,7 +57,6 @@ def add_url():
         url = request.form.get('url')
         normalized_url = normalize_url(url)
 
-        # Ensure valid URL format
         if not validators.url(normalized_url):
             flash('Invalid URL!', 'error')
             return redirect(url_for('index'))
@@ -135,7 +134,7 @@ def show_url(id):
                 [id, status_code, h1_content, title_content, meta_description, datetime.now()]
             )
             conn.commit()
-            flash('SEO check completed successfully!', 'success')
+            flash('Страница успешно проверена', 'success')
         except Exception as e:
             conn.rollback()
             flash(f"Error saving check data: {e}", 'error')
