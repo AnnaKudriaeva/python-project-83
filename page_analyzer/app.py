@@ -137,6 +137,11 @@ def show_url(id):
             )
             conn.commit()
             flash('Страница успешно проверена', 'success')
+
+            response = requests.get(url)
+            if response.status_code != 200:
+                flash("Произошла ошибка при проверке", 'error')
+                return None, '', '', ''
         except Exception as e:
             conn.rollback()
             flash(f"Ошибка проверки страницы: {e}", 'error')
