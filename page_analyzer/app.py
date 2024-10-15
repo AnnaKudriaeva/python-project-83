@@ -51,7 +51,7 @@ def normalize_url(url):
     #if parsed_url.scheme != 'https':
     #    parsed_url = parsed_url._replace(scheme='https')
     
-    normalized_url = urlunparse(parsed_url).rstrip('/')
+    normalized_url = f"{parsed_url.scheme}://{parsed_url.netloc}".rstrip('/')
     return normalized_url
 
 @app.route('/urls', methods=['GET', 'POST'])
