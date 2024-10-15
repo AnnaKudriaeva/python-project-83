@@ -47,16 +47,18 @@ def index():
 def normalize_url(url):
     # Parse the URL
     parsed = urlparse(url)
-    # Ensure the scheme is http or https
-    if parsed.scheme == '':
-        url = 'https://' + url
-        parsed = urlparse(url)
-    
-    # Normalize the path
-    normalized_path = parsed.path.rstrip('/')  # Remove trailing slashes
 
-    # Reconstruct the normalized URL
-    normalized_url = urlunparse((parsed.scheme, parsed.netloc, normalized_path, '', '', ''))
+    # Ensure the scheme is present and force it to http
+    if not parsed.scheme:
+        parsed = parsed._replace(scheme='http')
+
+    # Normalize the netloc and path
+    normalized_netloc = parsed.netloc.lower()  # Lowercase for case insensitivity
+    normalized_path = parsed.path.rstrip('/')  # Remove trailing slash
+
+    # Reconstruct the normalized URL without query and fragment
+    normalized_url = urlunparse((parsed.scheme, normalized_netloc, normalized_path, '', '', ''))
+    
     return normalized_url
 
 @app.route('/urls', methods=['GET', 'POST'])
@@ -65,6 +67,7 @@ def add_url():
         url = request.form.get('url')
         normalized_url = normalize_url(url)
 
+        # Ensure valid URL format
         if not validators.url(normalized_url):
             flash('Invalid URL!', 'error')
             return redirect(url_for('index'))
@@ -75,16 +78,17 @@ def add_url():
         try:
             created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             # Check if the normalized URL already exists
-            cur.execute("SELECT id FROM urls WHERE name = %s", [normalized_url])
+            cur.execute("SELECT id FROM urls WHERE name = %s", (normalized_url,))
             existing_url = cur.fetchone()
 
             if existing_url:
                 flash('Страница уже существует', 'error')
                 return redirect(url_for('show_url', id=existing_url['id']))
 
+            # Insert the normalized URL into the database
             cur.execute(
                 sql.SQL("INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"),
-                [normalized_url, created_at]
+                (normalized_url, created_at)
             )
             url_id = cur.fetchone()['id']
             conn.commit()
