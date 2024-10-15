@@ -26,8 +26,8 @@ def fetch_seo_data(url):
     try:
         response = requests.get(url)
         if response.status_code != 200:
-            flash(f"Error fetching the page: {response.status_code}", 'error')
-            return None, None, None, None
+            flash("Произошла ошибка при проверке", 'error')
+            return None, '', '', ''
 
         soup = BeautifulSoup(response.text, 'html.parser')
         h1_content = soup.find('h1').get_text(strip=True) if soup.find('h1') else None
@@ -48,7 +48,7 @@ def normalize_url(url):
     parsed_url = urlparse(url.lower())
     
     # Force HTTPS
-    if parsed_url.scheme != 'https':
+    if parsed_url.scheme == 'http':
         parsed_url = parsed_url._replace(scheme='https')
     
     normalized_url = f"{parsed_url.scheme}://{parsed_url.netloc}".rstrip('/')
