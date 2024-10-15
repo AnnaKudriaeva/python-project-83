@@ -58,26 +58,18 @@ def add_url():
         cur = conn.cursor()
 
         try:
-            # Check if the exact URL (including path) already exists in the database
-            cur.execute("SELECT id FROM urls WHERE name = %s", [url])
-            existing_url = cur.fetchone()
-
-            if existing_url:
-                flash('Страница уже существует', 'error')
-                return redirect(url_for('index'))
-
-            # Insert the new URL
             created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             cur.execute(
-                sql.SQL("INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"),
-                [url, created_at]
+            sql.SQL("INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"),
+            [url, created_at]
             )
             url_id = cur.fetchone()['id']
             conn.commit()
             flash('Страница успешно добавлена', 'success')
         except psycopg2.IntegrityError:
             conn.rollback()
-            flash('Error adding the page.', 'error')
+            flash('Страница уже существует', 'error')  # Flash this message
+            return redirect(url_for('index'))
         finally:
             cur.close()
             conn.close()
@@ -123,10 +115,11 @@ def show_url(id):
                 [id, status_code, h1_content, title_content, meta_description, datetime.now()]
             )
             conn.commit()
-            flash('SEO check completed successfully!', 'success')
+            flash('Страница успешно проверена', 'success')  # Flash this message
         except Exception as e:
             conn.rollback()
             flash(f"Error saving check data: {e}", 'error')
+
         finally:
             cur.close()
             conn.close()
