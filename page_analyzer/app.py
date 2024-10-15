@@ -47,8 +47,9 @@ def index():
 @app.route('/urls', methods=['GET', 'POST'])
 def add_url():
     if request.method == 'POST':
-        url = request.form.get('url')
+        url = request.form.get('url').strip()
 
+        # Validate the URL
         if not validators.url(url):
             flash('Invalid URL!', 'error')
             return redirect(url_for('index'))
@@ -57,6 +58,15 @@ def add_url():
         cur = conn.cursor()
 
         try:
+            # Check if the exact URL already exists in the database
+            cur.execute("SELECT id FROM urls WHERE name = %s", [url])
+            existing_url = cur.fetchone()
+
+            if existing_url:
+                flash('This exact page already exists!', 'error')
+                return redirect(url_for('index'))
+
+            # Insert the new URL with its full structure
             created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             cur.execute(
                 sql.SQL("INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"),
@@ -67,14 +77,14 @@ def add_url():
             flash('Страница успешно добавлена', 'success')
         except psycopg2.IntegrityError:
             conn.rollback()
-            flash('Страница уже существует', 'error')
-            return redirect(url_for('index'))
+            flash('Error adding the page.', 'error')
         finally:
             cur.close()
             conn.close()
 
         return redirect(url_for('show_url', id=url_id))
     else:
+        # Display the list of all URLs
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
