@@ -69,7 +69,8 @@ def add_url():
 
         try:
             created_at = datetime.now().strftime('%Y-%m-%d')
-            # Check if the normalized URL already exists
+
+            # Check if a variation of the normalized URL already exists
             cur.execute("SELECT id FROM urls WHERE name = %s", (normalized_url,))
             existing_url = cur.fetchone()
 
@@ -77,6 +78,7 @@ def add_url():
                 flash('Страница уже существует', 'error')
                 return redirect(url_for('show_url', id=existing_url['id']))
 
+            # Insert the new URL if no duplicates are found
             cur.execute(
                 sql.SQL("INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"),
                 (normalized_url, created_at)
@@ -84,6 +86,10 @@ def add_url():
             url_id = cur.fetchone()['id']
             conn.commit()
             flash('Страница успешно добавлена', 'success')
+        except psycopg2.IntegrityError:  # Catch uniqueness constraint violation
+            conn.rollback()
+            flash('URL уже существует в базе данных', 'error')
+            return render_template('index.html'), 422
         except Exception as e:
             conn.rollback()
             flash(f"Ошибка добавления страницы: {e}", 'error')
