@@ -35,8 +35,8 @@ def fetch_seo_data(url):
         meta_description = soup.find('meta', attrs={'name': 'description'})['content'] if soup.find('meta', attrs={'name': 'description'}) else None
 
         return response.status_code, h1_content, title_content, meta_description
-    except Exception as e:
-        flash(f"Ошибка при парсинге страницы: {e}", 'error')
+    except Exception:
+        flash("Произошла ошибка при проверке", 'error')
         return None, None, None, None
 
 @app.route('/')
