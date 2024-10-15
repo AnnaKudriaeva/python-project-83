@@ -58,15 +58,15 @@ def add_url():
         cur = conn.cursor()
 
         try:
-            # Check if the exact URL already exists in the database
+            # Check if the exact URL (including path) already exists in the database
             cur.execute("SELECT id FROM urls WHERE name = %s", [url])
             existing_url = cur.fetchone()
 
             if existing_url:
-                flash('This exact page already exists!', 'error')
+                flash('Страница уже существует', 'error')
                 return redirect(url_for('index'))
 
-            # Insert the new URL with its full structure
+            # Insert the new URL
             created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             cur.execute(
                 sql.SQL("INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"),
