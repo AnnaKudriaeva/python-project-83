@@ -6,7 +6,7 @@ from psycopg2 import sql
 from psycopg2.extras import DictCursor
 from dotenv import load_dotenv
 from datetime import datetime
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse
 import os
 import validators
 
@@ -68,7 +68,7 @@ def add_url():
         cur = conn.cursor()
 
         try:
-            created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            created_at = datetime.now().strftime('%Y-%m-%d')
             # Check if the normalized URL already exists
             cur.execute("SELECT id FROM urls WHERE name = %s", (normalized_url,))
             existing_url = cur.fetchone()
