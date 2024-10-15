@@ -22,18 +22,21 @@ def get_db_connection():
     )
 
 def fetch_seo_data(url):
+    """Fetch SEO data from the URL using BeautifulSoup."""
     try:
         response = requests.get(url)
+        if response.status_code != 200:
+            flash(f"Error fetching the page: {response.status_code}", 'error')
+            return None, None, None, None
+
         soup = BeautifulSoup(response.text, 'html.parser')
-        h1_tag = soup.find('h1')
-        title_tag = soup.find('title')
-        meta_description_tag = soup.find('meta', attrs={'name': 'description'})
-        h1_content = h1_tag.get_text(strip=True) if h1_tag else None
-        title_content = title_tag.get_text(strip=True) if title_tag else None
-        meta_description = meta_description_tag['content'] if meta_description_tag else None
+        h1_content = soup.find('h1').get_text(strip=True) if soup.find('h1') else None
+        title_content = soup.find('title').get_text(strip=True) if soup.find('title') else None
+        meta_description = soup.find('meta', attrs={'name': 'description'})['content'] if soup.find('meta', attrs={'name': 'description'}) else None
+
         return response.status_code, h1_content, title_content, meta_description
     except Exception as e:
-        flash(f"Произошла ошибка при проверке: {e}", 'error')
+        flash(f"Error parsing the page: {e}", 'error')
         return None, None, None, None
 
 @app.route('/')
@@ -43,9 +46,8 @@ def index():
 @app.route('/urls', methods=['GET', 'POST'])
 def add_url():
     if request.method == 'POST':
-        url = request.form.get('url').strip()
+        url = request.form.get('url')
 
-        # Validate the URL
         if not validators.url(url):
             flash('Invalid URL!', 'error')
             return redirect(url_for('index'))
@@ -56,15 +58,19 @@ def add_url():
         try:
             created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             cur.execute(
-            sql.SQL("INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"),
-            [url, created_at]
+                sql.SQL("INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"),
+                [url, created_at]
             )
             url_id = cur.fetchone()['id']
             conn.commit()
             flash('Страница успешно добавлена', 'success')
         except psycopg2.IntegrityError:
             conn.rollback()
-            flash('Страница уже существует', 'error')  # Flash this message
+            flash('Страница уже существует', 'error')
+            return redirect(url_for('index'))
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error adding the URL: {e}", 'error')
             return redirect(url_for('index'))
         finally:
             cur.close()
@@ -72,7 +78,6 @@ def add_url():
 
         return redirect(url_for('show_url', id=url_id))
     else:
-        # Display the list of all URLs
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
@@ -90,7 +95,7 @@ def add_url():
 def show_url(id):
     conn = get_db_connection()
     cur = conn.cursor()
-    
+
     cur.execute("SELECT id, name, created_at FROM urls WHERE id = %s", [id])
     url = cur.fetchone()
 
@@ -105,17 +110,21 @@ def show_url(id):
 
     if request.method == 'POST':
         status_code, h1_content, title_content, meta_description = fetch_seo_data(url['name'])
+        if status_code is None:
+            cur.close()
+            conn.close()
+            return redirect(url_for('show_url', id=id))
+
         try:
             cur.execute(
                 sql.SQL("INSERT INTO checks (url_id, status_code, h1, title, description, created_at) VALUES (%s, %s, %s, %s, %s, %s)"),
                 [id, status_code, h1_content, title_content, meta_description, datetime.now()]
             )
             conn.commit()
-            flash('Страница успешно проверена', 'success')  # Flash this message
+            flash('SEO check completed successfully!', 'success')
         except Exception as e:
             conn.rollback()
             flash(f"Error saving check data: {e}", 'error')
-
         finally:
             cur.close()
             conn.close()
