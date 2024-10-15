@@ -84,9 +84,8 @@ def add_url():
             url_id = cur.fetchone()['id']
             conn.commit()
             flash('Страница успешно добавлена', 'success')
-        except Exception as e:
             conn.rollback()
-            flash(f"Error saving URL: {e}", 'error')
+            flash('Некорректный URL', 'error')
         finally:
             cur.close()
             conn.close()
