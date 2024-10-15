@@ -1,5 +1,3 @@
-#app.py
-
 from flask import Flask, request, redirect, url_for, render_template, flash
 from bs4 import BeautifulSoup
 import requests
@@ -8,7 +6,7 @@ from psycopg2 import sql
 from psycopg2.extras import DictCursor
 from dotenv import load_dotenv
 from datetime import datetime
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 import os
 import validators
 
@@ -46,10 +44,14 @@ def index():
     return render_template('index.html')
 
 def normalize_url(url):
-    """Normalize the URL by stripping protocol, trailing slashes, and converting to lowercase."""
-
+    """Normalize the URL by converting to HTTPS and removing trailing slashes."""
     parsed_url = urlparse(url.lower())
-    normalized_url = f"{parsed_url.scheme}://{parsed_url.netloc}".rstrip('/')
+    
+    # Force HTTPS
+    if parsed_url.scheme != 'https':
+        parsed_url = parsed_url._replace(scheme='https')
+    
+    normalized_url = urlunparse(parsed_url).rstrip('/')
     return normalized_url
 
 @app.route('/urls', methods=['GET', 'POST'])
@@ -59,7 +61,7 @@ def add_url():
         normalized_url = normalize_url(url)
 
         if not validators.url(normalized_url):
-            flash('Invalid URL!', 'error')
+            flash('Неправильный URL!', 'error')
             return redirect(url_for('index'))
 
         conn = get_db_connection()
@@ -82,7 +84,9 @@ def add_url():
             url_id = cur.fetchone()['id']
             conn.commit()
             flash('Страница успешно добавлена', 'success')
+        except Exception as e:
             conn.rollback()
+            flash(f"Error adding the page: {e}", 'error')
         finally:
             cur.close()
             conn.close()
@@ -111,7 +115,7 @@ def show_url(id):
     url = cur.fetchone()
 
     if not url:
-        flash('Произошла ошибка при проверке', 'error')
+        flash('Error retrieving the URL', 'error')
         cur.close()
         conn.close()
         return redirect(url_for('index'))
@@ -135,7 +139,7 @@ def show_url(id):
             flash('Страница успешно проверена', 'success')
         except Exception as e:
             conn.rollback()
-            flash(f"Произошла ошибка при проверке: {e}", 'error')
+            flash(f"Error checking the page: {e}", 'error')
         finally:
             cur.close()
             conn.close()
