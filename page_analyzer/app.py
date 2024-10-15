@@ -22,22 +22,18 @@ def get_db_connection():
     )
 
 def fetch_seo_data(url):
-    """Fetch SEO data from the URL using BeautifulSoup."""
     try:
         response = requests.get(url)
         soup = BeautifulSoup(response.text, 'html.parser')
-
         h1_tag = soup.find('h1')
         title_tag = soup.find('title')
         meta_description_tag = soup.find('meta', attrs={'name': 'description'})
-
         h1_content = h1_tag.get_text(strip=True) if h1_tag else None
         title_content = title_tag.get_text(strip=True) if title_tag else None
         meta_description = meta_description_tag['content'] if meta_description_tag else None
-
         return response.status_code, h1_content, title_content, meta_description
     except Exception as e:
-        flash(f"Error parsing the page: {e}", 'error')
+        flash(f"Произошла ошибка при проверке: {e}", 'error')
         return None, None, None, None
 
 @app.route('/')
