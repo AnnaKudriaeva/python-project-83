@@ -12,7 +12,6 @@ from urllib.parse import urlparse
 import os
 import validators
 
-# Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
@@ -76,7 +75,6 @@ def add_url():
                 flash('Страница уже существует', 'error')
                 return redirect(url_for('show_url', id=existing_url['id']))
 
-            # Insert the normalized URL into the database
             cur.execute(
                 sql.SQL("INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"),
                 (normalized_url, created_at)
@@ -85,7 +83,6 @@ def add_url():
             conn.commit()
             flash('Страница успешно добавлена', 'success')
             conn.rollback()
-            flash('Некорректный URL', 'error')
         finally:
             cur.close()
             conn.close()
