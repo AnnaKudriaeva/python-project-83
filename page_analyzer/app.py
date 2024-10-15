@@ -1,3 +1,5 @@
+#app.py
+
 from flask import Flask, request, redirect, url_for, render_template, flash
 from bs4 import BeautifulSoup
 import requests
@@ -113,7 +115,7 @@ def show_url(id):
     url = cur.fetchone()
 
     if not url:
-        flash('URL not found!', 'error')
+        flash('Произошла ошибка при проверке', 'error')
         cur.close()
         conn.close()
         return redirect(url_for('index'))
@@ -137,7 +139,7 @@ def show_url(id):
             flash('Страница успешно проверена', 'success')
         except Exception as e:
             conn.rollback()
-            flash(f"Error saving check data: {e}", 'error')
+            flash(f"Произошла ошибка при проверке: {e}", 'error')
         finally:
             cur.close()
             conn.close()
