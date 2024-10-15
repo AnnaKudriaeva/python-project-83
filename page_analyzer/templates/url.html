@@ -44,14 +44,14 @@
                 </tr>
             </thead>
             <tbody>
-                {% for check in checks %}
+                {% for num, check in checks %}
                 <tr>
-                    <td>{{ check['id'] }}</td>
-                    <td>{{ check['status_code'] }}</td>
-                    <td>{{ check['h1'] }}</td>
-                    <td>{{ check['title'] }}</td>
-                    <td>{{ check['description'] }}</td>
-                    <td>{{ check['created_at'] }}</td>
+                    <td>{{ num }}</td>
+                    <td>{{ check.status_code }}</td>
+                    <td>{{ check.h1 }}</td>
+                    <td>{{ check.title }}</td>
+                    <td>{{ check.description }}</td>
+                    <td>{{ check.created_at }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

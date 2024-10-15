@@ -148,7 +148,12 @@ def show_url(id):
 
     cur.close()
     conn.close()
-    return render_template('url.html', url=url, checks=checks)
+    
+    # Prepare numbered checks for display
+    numbered_checks = [(i + 1, check) for i, check in enumerate(checks)]
+    
+    return render_template('url.html', url=url, checks=numbered_checks)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
