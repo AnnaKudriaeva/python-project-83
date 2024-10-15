@@ -45,20 +45,10 @@ def index():
     return render_template('index.html')
 
 def normalize_url(url):
-    # Parse the URL
-    parsed = urlparse(url)
+    """Normalize the URL by stripping protocol, trailing slashes, and converting to lowercase."""
 
-    # Ensure the scheme is present and force it to http
-    if not parsed.scheme:
-        parsed = parsed._replace(scheme='http')
-
-    # Normalize the netloc and path
-    normalized_netloc = parsed.netloc.lower()  # Lowercase for case insensitivity
-    normalized_path = parsed.path.rstrip('/')  # Remove trailing slash
-
-    # Reconstruct the normalized URL without query and fragment
-    normalized_url = urlunparse((parsed.scheme, normalized_netloc, normalized_path, '', '', ''))
-    
+    parsed_url = urlparse(url.lower())
+    normalized_url = f"{parsed_url.scheme}://{parsed_url.netloc}".rstrip('/')
     return normalized_url
 
 @app.route('/urls', methods=['GET', 'POST'])
