@@ -36,7 +36,7 @@ def fetch_seo_data(url):
 
         return response.status_code, h1_content, title_content, meta_description
     except Exception as e:
-        flash(f"Error parsing the page: {e}", 'error')
+        flash(f"Ошибка при парсинге страницы: {e}", 'error')
         return None, None, None, None
 
 @app.route('/')
@@ -61,8 +61,8 @@ def add_url():
         normalized_url = normalize_url(url)
 
         if not validators.url(normalized_url):
-            flash('Неправильный URL!', 'error')
-            return redirect(url_for('index'))
+            flash('Некорректный URL', 'error')
+            return render_template('index.html'), 422
 
         conn = get_db_connection()
         cur = conn.cursor()
@@ -86,7 +86,7 @@ def add_url():
             flash('Страница успешно добавлена', 'success')
         except Exception as e:
             conn.rollback()
-            flash(f"Error adding the page: {e}", 'error')
+            flash(f"Ошибка добавления страницы: {e}", 'error')
         finally:
             cur.close()
             conn.close()
@@ -115,7 +115,7 @@ def show_url(id):
     url = cur.fetchone()
 
     if not url:
-        flash('Error retrieving the URL', 'error')
+        flash('Ошибка при получении URL', 'error')
         cur.close()
         conn.close()
         return redirect(url_for('index'))
@@ -139,7 +139,7 @@ def show_url(id):
             flash('Страница успешно проверена', 'success')
         except Exception as e:
             conn.rollback()
-            flash(f"Error checking the page: {e}", 'error')
+            flash(f"Ошибка проверки страницы: {e}", 'error')
         finally:
             cur.close()
             conn.close()
@@ -153,7 +153,6 @@ def show_url(id):
     numbered_checks = [(i + 1, check) for i, check in enumerate(checks)]
     
     return render_template('url.html', url=url, checks=numbered_checks)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
