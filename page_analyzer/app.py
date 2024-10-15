@@ -45,13 +45,16 @@ def index():
     return render_template('index.html')
 
 def normalize_url(url):
+    # Parse the URL
     parsed = urlparse(url)
     # Ensure the scheme is http or https
     if parsed.scheme == '':
-        url = 'http://' + url
+        url = 'https://' + url
         parsed = urlparse(url)
-    # Remove trailing slash
-    normalized_path = parsed.path.rstrip('/')
+    
+    # Normalize the path
+    normalized_path = parsed.path.rstrip('/')  # Remove trailing slashes
+
     # Reconstruct the normalized URL
     normalized_url = urlunparse((parsed.scheme, parsed.netloc, normalized_path, '', '', ''))
     return normalized_url
