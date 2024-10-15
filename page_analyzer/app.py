@@ -6,6 +6,7 @@ from psycopg2 import sql
 from psycopg2.extras import DictCursor
 from dotenv import load_dotenv
 from datetime import datetime
+from urllib.parse import urlparse, urlunparse
 import os
 import validators
 
@@ -43,12 +44,25 @@ def fetch_seo_data(url):
 def index():
     return render_template('index.html')
 
+def normalize_url(url):
+    parsed = urlparse(url)
+    # Ensure the scheme is http or https
+    if parsed.scheme == '':
+        url = 'http://' + url
+        parsed = urlparse(url)
+    # Remove trailing slash
+    normalized_path = parsed.path.rstrip('/')
+    # Reconstruct the normalized URL
+    normalized_url = urlunparse((parsed.scheme, parsed.netloc, normalized_path, '', '', ''))
+    return normalized_url
+
 @app.route('/urls', methods=['GET', 'POST'])
 def add_url():
     if request.method == 'POST':
         url = request.form.get('url')
+        normalized_url = normalize_url(url)
 
-        if not validators.url(url):
+        if not validators.url(normalized_url):
             flash('Invalid URL!', 'error')
             return redirect(url_for('index'))
 
@@ -57,21 +71,24 @@ def add_url():
 
         try:
             created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            # Check if the normalized URL already exists
+            cur.execute("SELECT id FROM urls WHERE name = %s", [normalized_url])
+            existing_url = cur.fetchone()
+
+            if existing_url:
+                flash('Страница уже существует', 'error')
+                return redirect(url_for('show_url', id=existing_url['id']))
+
             cur.execute(
                 sql.SQL("INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"),
-                [url, created_at]
+                [normalized_url, created_at]
             )
             url_id = cur.fetchone()['id']
             conn.commit()
             flash('Страница успешно добавлена', 'success')
-        except psycopg2.IntegrityError:
-            conn.rollback()
-            flash('Страница уже существует', 'error')
-            return redirect(url_for('index'))
         except Exception as e:
             conn.rollback()
-            flash(f"Error adding the URL: {e}", 'error')
-            return redirect(url_for('index'))
+            flash(f"Error saving URL: {e}", 'error')
         finally:
             cur.close()
             conn.close()
