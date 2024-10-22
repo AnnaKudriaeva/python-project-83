@@ -48,8 +48,8 @@ def normalize_url(url):
     parsed_url = urlparse(url.lower())
     
     # Force HTTPS
-    if parsed_url.scheme == 'http':
-        parsed_url = parsed_url._replace(scheme='https')
+#    if parsed_url.scheme == 'http':
+#        parsed_url = parsed_url._replace(scheme='https')
     
     normalized_url = f"{parsed_url.scheme}://{parsed_url.netloc}".rstrip('/')
     return normalized_url
