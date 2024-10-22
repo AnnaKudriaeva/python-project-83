@@ -23,8 +23,8 @@
                 <tr>
                     <td>{{ url['id'] }}</td>
                     <td><a href="{{ url_for('show_url', id=url['id']) }}">{{ url['name'] }}</a></td>
-                    <td>{{ url['status_code'] if url['status_code'] is not none else 'N/A' }}</td>
                     <td>{{ url['created_at'] }}</td>
+                    <td>{{ url['status_code'] if url['status_code'] is not none else ' ' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
