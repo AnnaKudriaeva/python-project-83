@@ -52,76 +52,75 @@ def index():
 
 def normalize_url(url):
     parsed_url = urlparse(url.lower())
-
     normalized_url = f"{parsed_url.scheme}://{parsed_url.netloc}".rstrip("/")
     return normalized_url
 
 
-@app.route("/urls", methods=["GET", "POST"])
-def add_url():
-    if request.method == "POST":
-        url = request.form.get("url")
-        normalized_url = normalize_url(url)
-
-        if not validators.url(normalized_url):
-            flash("Некорректный URL", "error")
-            return render_template("index.html"), 422
-
-        conn = get_db_connection()
-        cur = conn.cursor()
-
-        try:
-            created_at = datetime.now().strftime("%Y-%m-%d")
-
-            cur.execute("SELECT id FROM urls "
-                        "WHERE name = %s", (normalized_url,))
-            existing_url = cur.fetchone()
-
-            if existing_url:
-                flash("Страница уже существует", "error")
-                return redirect(url_for("show_url", id=existing_url["id"]))
-
-            cur.execute(
-                sql.SQL(
-                    "INSERT INTO urls (name, created_at) "
-                    "VALUES (%s, %s) RETURNING id"
-                ),
-                (normalized_url, created_at),
-            )
-            url_id = cur.fetchone()["id"]
-            conn.commit()
-            flash("Страница успешно добавлена", "success")
-        except pg.IntegrityError:
-            conn.rollback()
-            flash("URL уже существует в базе данных", "error")
-            return render_template("index.html"), 422
-        except Exception as e:
-            conn.rollback()
-            flash(f"Ошибка добавления страницы: {e}", "error")
-        finally:
-            cur.close()
-            conn.close()
-
-        return redirect(url_for("show_url", id=url_id))
-    else:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute(
-            """
-            SELECT urls.id, urls.name, urls.created_at, checks.status_code
-            FROM urls
-            LEFT JOIN checks ON urls.id = checks.url_id
-            ORDER BY urls.created_at DESC
+@app.route("/urls", methods=["GET"])
+def get_urls():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
         """
+        SELECT urls.id, urls.name, urls.created_at, checks.status_code
+        FROM urls
+        LEFT JOIN checks ON urls.id = checks.url_id
+        ORDER BY urls.created_at DESC
+    """
+    )
+    urls = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template("urls.html", urls=urls)
+
+
+@app.route("/urls", methods=["POST"])
+def post_url():
+    url = request.form.get("url")
+    normalized_url = normalize_url(url)
+
+    if not validators.url(normalized_url):
+        flash("Некорректный URL", "error")
+        return render_template("index.html"), 422
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    try:
+        created_at = datetime.now().strftime("%Y-%m-%d")
+
+        cur.execute("SELECT id FROM urls WHERE name = %s", (normalized_url,))
+        existing_url = cur.fetchone()
+
+        if existing_url:
+            flash("Страница уже существует", "error")
+            return redirect(url_for("get_url", id=existing_url["id"]))
+
+        cur.execute(
+            sql.SQL(
+                "INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"
+            ),
+            (normalized_url, created_at),
         )
-        urls = cur.fetchall()
+        url_id = cur.fetchone()["id"]
+        conn.commit()
+        flash("Страница успешно добавлена", "success")
+    except pg.IntegrityError:
+        conn.rollback()
+        flash("URL уже существует в базе данных", "error")
+        return render_template("index.html"), 422
+    except Exception as e:
+        conn.rollback()
+        flash(f"Ошибка добавления страницы: {e}", "error")
+    finally:
         cur.close()
         conn.close()
-        return render_template("urls.html", urls=urls)
+
+    return redirect(url_for("get_url", id=url_id))
 
 
-@app.route("/urls/<int:id>", methods=["GET", "POST"])
-def show_url(id):
+@app.route("/urls/<int:id>", methods=["GET"])
+def get_url(id):
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -135,54 +134,56 @@ def show_url(id):
         return redirect(url_for("index"))
 
     cur.execute(
-        "SELECT id, status_code, h1, title, description, "
-        "created_at FROM checks WHERE url_id = %s ORDER BY created_at DESC",
+        "SELECT id, status_code, h1, title, description, created_at FROM checks "
+        "WHERE url_id = %s ORDER BY created_at DESC",
         [id],
     )
     checks = cur.fetchall()
-
-    if request.method == "POST":
-        status_code, h1_content, title_content, meta_desc = fetch_seo_data(
-            url["name"]
-        )
-        if status_code is None:
-            cur.close()
-            conn.close()
-            return redirect(url_for("show_url", id=id))
-
-        try:
-            cur.execute(
-                sql.SQL(
-                    "INSERT INTO checks (url_id, status_code, h1, title, "
-                    "description, created_at) VALUES (%s, %s, %s, %s, %s, %s)"
-                ),
-                [
-                    id,
-                    status_code,
-                    h1_content,
-                    title_content,
-                    meta_desc,
-                    datetime.now(),
-                ],
-            )
-            conn.commit()
-            flash("Страница успешно проверена", "success")
-
-        except Exception as e:
-            conn.rollback()
-            flash(f"Ошибка проверки страницы: {e}", "error")
-        finally:
-            cur.close()
-            conn.close()
-
-        return redirect(url_for("show_url", id=id))
-
     cur.close()
     conn.close()
 
     numbered_checks = [(i + 1, check) for i, check in enumerate(checks)]
-
     return render_template("url.html", url=url, checks=numbered_checks)
+
+
+@app.route("/urls/<int:id>/check", methods=["POST"])
+def post_check_url(id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT name FROM urls WHERE id = %s", [id])
+    url = cur.fetchone()
+
+    if not url:
+        flash("Ошибка при проверке URL", "error")
+        cur.close()
+        conn.close()
+        return redirect(url_for("index"))
+
+    status_code, h1_content, title_content, meta_desc = fetch_seo_data(url["name"])
+    if status_code is None:
+        cur.close()
+        conn.close()
+        return redirect(url_for("get_url", id=id))
+
+    try:
+        cur.execute(
+            sql.SQL(
+                "INSERT INTO checks (url_id, status_code, h1, title, description, created_at) "
+                "VALUES (%s, %s, %s, %s, %s, %s)"
+            ),
+            [id, status_code, h1_content, title_content, meta_desc, datetime.now()],
+        )
+        conn.commit()
+        flash("Страница успешно проверена", "success")
+    except Exception as e:
+        conn.rollback()
+        flash(f"Ошибка проверки страницы: {e}", "error")
+    finally:
+        cur.close()
+        conn.close()
+
+    return redirect(url_for("get_url", id=id))
 
 
 if __name__ == "__main__":
