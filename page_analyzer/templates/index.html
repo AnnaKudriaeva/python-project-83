@@ -17,7 +17,7 @@
             {% endif %}
         {% endwith %}
         
-        <form action="{{ url_for('add_url') }}" method="post" class="mt-4">
+        <form action="{{ url_for('post_url') }}" method="post" class="mt-4">
             <div class="mb-3">
                 <label for="url" class="form-label">Введите URL</label>
                 <input type="text" class="form-control" id="url" name="url" required>
@@ -27,7 +27,7 @@
         
         <div class="mt-4">
             <a href="{{ url_for('index') }}" class="btn btn-link">Главная страница</a>
-            <a href="{{ url_for('add_url') }}" class="btn btn-link">Посмотреть все сайты</a>
+            <a href="{{ url_for('get_urls') }}" class="btn btn-link">Посмотреть все сайты</a>
         </div>
     </div>
 </body>

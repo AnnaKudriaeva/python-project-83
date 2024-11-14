@@ -58,12 +58,12 @@
                 {% endfor %}
             </tbody>
         </table>
-        <form action="{{ url_for('show_url', id=url['id']) }}" method="post">
+        <form action="{{ url_for('get_url', id=url['id']) }}" method="post">
             <input type="submit" class="btn btn-success" value="Запустить проверку"/>
         </form>
         <div class="mt-4">
             <a href="{{ url_for('index') }}" class="btn btn-link">Главная страница</a>
-            <a href="{{ url_for('add_url') }}" class="btn btn-link">Посмотреть все сайты</a>
+            <a href="{{ url_for('get_urls') }}" class="btn btn-link">Посмотреть все сайты</a>
         </div>
     </div>
 </body>

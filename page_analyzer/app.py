@@ -74,7 +74,7 @@ def get_urls():
     return render_template("urls.html", urls=urls)
 
 
-@app.route("/urls", methods=["POST"])
+@app.post("/urls")
 def post_url():
     url = request.form.get("url")
     normalized_url = normalize_url(url)
@@ -119,7 +119,7 @@ def post_url():
     return redirect(url_for("get_url", id=url_id))
 
 
-@app.route("/urls/<int:id>", methods=["GET"])
+@app.get("/urls/<int:id>")
 def get_url(id):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -146,7 +146,7 @@ def get_url(id):
     return render_template("url.html", url=url, checks=numbered_checks)
 
 
-@app.route("/urls/<int:id>/check", methods=["POST"])
+@app.post("/urls/<int:id>/check")
 def post_check_url(id):
     conn = get_db_connection()
     cur = conn.cursor()

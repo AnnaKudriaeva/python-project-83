@@ -22,7 +22,7 @@
                 {% for url in urls %}
                 <tr>
                     <td>{{ url['id'] }}</td>
-                    <td><a href="{{ url_for('show_url', id=url['id']) }}">{{ url['name'] }}</a></td>
+                    <td><a href="{{ url_for('get_url', id=url['id']) }}">{{ url['name'] }}</a></td>
                     <td>{{ url['created_at'] }}</td>
                     <td>{{ url['status_code'] if url['status_code'] is not none else ' ' }}</td>
                 </tr>
@@ -31,7 +31,7 @@
         </table>
         <div class="mt-4">
             <a href="{{ url_for('index') }}" class="btn btn-link">Главная страница</a>
-            <a href="{{ url_for('add_url') }}" class="btn btn-link">Посмотреть все сайты</a>
+            <a href="{{ url_for('get_urls') }}" class="btn btn-link">Посмотреть все сайты</a>
         </div>
     </div>
 </body>
