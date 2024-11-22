@@ -30,7 +30,8 @@ def get_all_urls():
 def get_url_by_id(url_id):
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, name, created_at FROM urls WHERE id = %s", [url_id])
+    cur.execute("SELECT id, name,"
+                "created_at FROM urls WHERE id = %s", [url_id])
     url = cur.fetchone()
     cur.close()
     conn.close()
@@ -42,8 +43,8 @@ def get_checks_by_url_id(url_id):
     cur = conn.cursor()
     cur.execute(
         """
-        SELECT id, status_code, h1, title, description, 
-        created_at FROM checks WHERE url_id = %s 
+        SELECT id, status_code, h1, title, description,
+        created_at FROM checks WHERE url_id = %s
         ORDER BY created_at DESC
         """,
         [url_id],
@@ -61,7 +62,8 @@ def insert_url(normalized_url):
         cur = conn.cursor()
         cur.execute(
             sql.SQL(
-                "INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"
+                "INSERT INTO urls (name, created_at)"
+                "VALUES (%s, %s) RETURNING id"
             ),
             (normalized_url, datetime.now().strftime("%Y-%m-%d")),
         )
@@ -95,7 +97,8 @@ def insert_check(url_id, status_code, h1_content, title_content, meta_desc):
         cur = conn.cursor()
         cur.execute(
             sql.SQL(
-                "INSERT INTO checks (url_id, status_code, h1, title, description, created_at) "
+                "INSERT INTO checks (url_id, status_code, h1,"
+                "title, description, created_at) "
                 "VALUES (%s, %s, %s, %s, %s, %s)"
             ),
             [

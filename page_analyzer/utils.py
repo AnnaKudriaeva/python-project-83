@@ -3,6 +3,7 @@ import requests
 from urllib.parse import urlparse
 from flask import flash
 
+
 def normalize_url(url):
     parsed_url = urlparse(url.lower())
     normalized_url = f"{parsed_url.scheme}://{parsed_url.netloc}".rstrip("/")
@@ -18,7 +19,7 @@ def fetch_seo_data(url):
         return None, None, None, None
 
     soup = BeautifulSoup(response.text, "html.parser")
-    
+
     h1_tag = soup.find("h1")
     h1_content = h1_tag.get_text(strip=True) if h1_tag else None
 

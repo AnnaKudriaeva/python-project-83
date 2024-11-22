@@ -1,5 +1,11 @@
 from flask import Flask, request, redirect, url_for, render_template, flash
-from page_analyzer.db import get_all_urls, get_url_by_id, get_checks_by_url_id, insert_url, get_url_by_name, insert_check
+from page_analyzer.db import (get_all_urls,
+                              get_url_by_id,
+                              get_checks_by_url_id,
+                              insert_url,
+                              get_url_by_name,
+                              insert_check
+                              )
 from page_analyzer.utils import fetch_seo_data, normalize_url
 import os
 import validators
@@ -59,7 +65,9 @@ def post_check_url(id):
         flash("Ошибка при проверке URL", "error")
         return redirect(url_for("index"))
 
-    status_code, h1_content, title_content, meta_desc = fetch_seo_data(url["name"])
+    status_code, h1_content, title_content, meta_desc = fetch_seo_data(
+        url["name"]
+        )
     if status_code is None:
         return redirect(url_for("get_url", id=id))
 
