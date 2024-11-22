@@ -41,9 +41,6 @@ def fetch_seo_data(url):
     )
 
     return response.status_code, h1_content, title_content, meta_desc
-#    except Exception:
-#        flash("Произошла ошибка при проверке", "error")
-#        return None, None, None, None
 
 
 @app.route("/")
@@ -99,7 +96,8 @@ def post_url():
 
         cur.execute(
             sql.SQL(
-                "INSERT INTO urls (name, created_at) VALUES (%s, %s) RETURNING id"
+                "INSERT INTO urls (name, created_at)"
+                "VALUES (%s, %s) RETURNING id"
             ),
             (normalized_url, created_at),
         )
@@ -135,7 +133,8 @@ def get_url(id):
         return redirect(url_for("index"))
 
     cur.execute(
-        "SELECT id, status_code, h1, title, description, created_at FROM checks "
+        "SELECT id, status_code, h1, title, description,"
+        "created_at FROM checks "
         "WHERE url_id = %s ORDER BY created_at DESC",
         [id],
     )
@@ -161,7 +160,9 @@ def post_check_url(id):
         conn.close()
         return redirect(url_for("index"))
 
-    status_code, h1_content, title_content, meta_desc = fetch_seo_data(url["name"])
+    status_code, h1_content, title_content, meta_desc = fetch_seo_data(
+        url["name"]
+        )
     if status_code is None:
         cur.close()
         conn.close()
@@ -170,10 +171,18 @@ def post_check_url(id):
     try:
         cur.execute(
             sql.SQL(
-                "INSERT INTO checks (url_id, status_code, h1, title, description, created_at) "
+                "INSERT INTO checks (url_id, status_code, h1, title,"
+                "description, created_at) "
                 "VALUES (%s, %s, %s, %s, %s, %s)"
             ),
-            [id, status_code, h1_content, title_content, meta_desc, datetime.now()],
+            [
+                id,
+                status_code,
+                h1_content,
+                title_content,
+                meta_desc,
+                datetime.now()
+                ],
         )
         conn.commit()
         flash("Страница успешно проверена", "success")

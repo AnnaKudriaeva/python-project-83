@@ -11,6 +11,8 @@ In case the site is available, we get its:
 - `<meta name="description" content="...">` tag.
 The project is based on **Flask**: HTTP-requests and routing. The results of the checks are recorded in the database.
 
+https://python-project-83-rb7u.onrender.com
+
 ## Instalation
 
 ```sh
