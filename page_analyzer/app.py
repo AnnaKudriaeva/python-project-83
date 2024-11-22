@@ -23,9 +23,10 @@ def get_db_connection():
 def fetch_seo_data(url):
     try:
         response = requests.get(url)
-        if response.status_code != 200:
-            flash("Произошла ошибка при проверке", "error")
-            return None, "", "", ""
+        response.raise_for_status()
+    except requests.RequestException:
+        flash("Произошла ошибка при проверке", "error")
+        return None, None, None, None
 
     soup = BeautifulSoup(response.text, "html.parser")
     h1_tag = soup.find("h1")
