@@ -27,22 +27,22 @@ def fetch_seo_data(url):
             flash("Произошла ошибка при проверке", "error")
             return None, "", "", ""
 
-        soup = BeautifulSoup(response.text, "html.parser")
-        h1_tag = soup.find("h1")
-        h1_content = h1_tag.get_text(strip=True) if h1_tag else None
+    soup = BeautifulSoup(response.text, "html.parser")
+    h1_tag = soup.find("h1")
+    h1_content = h1_tag.get_text(strip=True) if h1_tag else None
 
-        title_tag = soup.find("title")
-        title_content = title_tag.get_text(strip=True) if title_tag else None
-        meta_desc = (
-            soup.find("meta", attrs={"name": "description"})["content"]
-            if soup.find("meta", attrs={"name": "description"})
-            else None
-        )
+    title_tag = soup.find("title")
+    title_content = title_tag.get_text(strip=True) if title_tag else None
+    meta_desc = (
+        soup.find("meta", attrs={"name": "description"})["content"]
+        if soup.find("meta", attrs={"name": "description"})
+        else None
+    )
 
-        return response.status_code, h1_content, title_content, meta_desc
-    except Exception:
-        flash("Произошла ошибка при проверке", "error")
-        return None, None, None, None
+    return response.status_code, h1_content, title_content, meta_desc
+#    except Exception:
+#        flash("Произошла ошибка при проверке", "error")
+#        return None, None, None, None
 
 
 @app.route("/")
