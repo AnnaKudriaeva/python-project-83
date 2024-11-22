@@ -58,7 +58,7 @@
                 {% endfor %}
             </tbody>
         </table>
-        <form action="{{ url_for('get_url', id=url['id']) }}" method="post">
+        <form action="{{ url_for('post_check_url', id=url['id']) }}" method="post">
             <input type="submit" class="btn btn-success" value="Запустить проверку"/>
         </form>
         <div class="mt-4">
