@@ -69,6 +69,7 @@ def insert_url(normalized_url):
         )
         url_id = cur.fetchone()["id"]
         conn.commit()
+        flash("Страница успешно добавлена", "success")
     except pg.IntegrityError:
         conn.rollback()
         flash("URL уже существует в базе данных", "error")
