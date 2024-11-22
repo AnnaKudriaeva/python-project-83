@@ -1,4 +1,5 @@
 from flask import Flask, request, redirect, url_for, render_template, flash
+from dotenv import load_dotenv
 from page_analyzer.db import (get_all_urls,
                               get_url_by_id,
                               get_checks_by_url_id,
@@ -9,6 +10,8 @@ from page_analyzer.db import (get_all_urls,
 from page_analyzer.utils import fetch_seo_data, normalize_url
 import os
 import validators
+
+load_dotenv()
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
