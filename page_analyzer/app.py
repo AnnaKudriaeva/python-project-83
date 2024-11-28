@@ -1,5 +1,3 @@
-#app.py
-
 from flask import Flask, request, redirect, url_for, render_template, flash
 from dotenv import load_dotenv
 from page_analyzer.db import (

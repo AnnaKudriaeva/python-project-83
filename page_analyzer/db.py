@@ -1,5 +1,3 @@
-#db.py
-
 from psycopg2 import sql
 from datetime import datetime
 
