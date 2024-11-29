@@ -1,5 +1,5 @@
-from flask import Flask, request, redirect, url_for, render_template, flash
 from dotenv import load_dotenv
+from flask import flash, Flask, redirect, render_template, request, url_for
 from page_analyzer import db
 from page_analyzer.utils import fetch_seo_data, normalize_url
 import os

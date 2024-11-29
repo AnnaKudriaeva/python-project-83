@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
+from flask import flash
 import requests
 from urllib.parse import urlparse
-from flask import flash
 
 
 def normalize_url(url):

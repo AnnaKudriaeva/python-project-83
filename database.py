@@ -1,6 +1,7 @@
-import psycopg2
-import os
 from dotenv import load_dotenv
+import os
+import psycopg2
+
 
 # Загрузка переменных окружения из файла .env
 load_dotenv()
