@@ -62,11 +62,14 @@ def get_url_by_name(conn, normalized_url):
         return cur.fetchone()
 
 
-def insert_check(conn, url_id, status_code, h1_content, title_content, meta_desc):
+def insert_check(
+        conn, url_id, status_code, h1_content, title_content, meta_desc
+        ):
     with conn.cursor() as cur:
         cur.execute(
             sql.SQL(
-                "INSERT INTO checks (url_id, status_code, h1, title, description, created_at) "
+                "INSERT INTO checks (url_id, status_code, h1,"
+                "title, description, created_at) "
                 "VALUES (%s, %s, %s, %s, %s, %s)"
             ),
             [

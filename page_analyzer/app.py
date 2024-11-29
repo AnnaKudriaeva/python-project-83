@@ -14,7 +14,6 @@ app.config["DATABASE_URL"] = os.getenv("DATABASE_URL")
 
 @app.errorhandler(Exception)
 def handle_exception(e):
-    """Обработчик для глобальных ошибок."""
     flash(f"Произошла ошибка: {e}", "error")
     return redirect(url_for("index")), 500
 
@@ -89,12 +88,16 @@ def post_check_url(id):
             flash("Ошибка при проверке URL", "error")
             return redirect(url_for("index"))
 
-        status_code, h1_content, title_content, meta_desc = fetch_seo_data(url["name"])
+        status_code, h1_content, title_content, meta_desc = fetch_seo_data(
+            url["name"]
+            )
         if status_code is None:
             flash("Не удалось проверить страницу", "error")
             return redirect(url_for("get_url", id=id))
 
-        db.insert_check(conn, id, status_code, h1_content, title_content, meta_desc)
+        db.insert_check(
+            conn, id, status_code, h1_content, title_content, meta_desc
+            )
         conn.commit()
     except Exception as e:
         conn.rollback()
