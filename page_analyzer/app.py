@@ -16,6 +16,7 @@ app.config["DATABASE_URL"] = os.getenv("DATABASE_URL")
 
 @app.errorhandler(Exception)
 def handle_exception(e):
+    """Глобальная обработка исключений."""
     flash(f"Произошла ошибка: {e}", "error")
     return redirect(url_for("index")), 500
 
@@ -28,6 +29,7 @@ def index():
 @app.route("/urls", methods=["GET"])
 def get_urls():
     conn = db.get_connection(app.config["DATABASE_URL"])
+    urls = []
     try:
         urls = db.get_all_urls(conn)
     finally:
@@ -47,15 +49,21 @@ def post_url():
     conn = db.get_connection(app.config["DATABASE_URL"])
     try:
         existing_url = db.get_url_by_name(conn, normalized_url)
-        if existing_url:
-            flash("Страница уже существует", "error")
-            return redirect(url_for("get_url", id=existing_url["id"]))
+    finally:
+        conn.close()
 
+    if existing_url:
+        flash("Страница уже существует", "error")
+        return redirect(url_for("get_url", id=existing_url["id"]))
+
+    conn = db.get_connection(app.config["DATABASE_URL"])
+    try:
         url_id = db.insert_url(conn, normalized_url)
         conn.commit()
     except Exception as e:
         conn.rollback()
         flash(f"Ошибка добавления страницы: {e}", "error")
+        conn.close()
         return render_template("index.html"), 422
     finally:
         conn.close()
@@ -69,10 +77,15 @@ def get_url(id):
     conn = db.get_connection(app.config["DATABASE_URL"])
     try:
         url = db.get_url_by_id(conn, id)
-        if not url:
-            flash("Ошибка при получении URL", "error")
-            return redirect(url_for("index"))
+    finally:
+        conn.close()
 
+    if not url:
+        flash("URL не найден", "error")
+        return redirect(url_for("index"))
+
+    conn = db.get_connection(app.config["DATABASE_URL"])
+    try:
         checks = db.get_checks_by_url_id(conn, id)
     finally:
         conn.close()
@@ -86,17 +99,22 @@ def post_check_url(id):
     conn = db.get_connection(app.config["DATABASE_URL"])
     try:
         url = db.get_url_by_id(conn, id)
-        if not url:
-            flash("Ошибка при проверке URL", "error")
-            return redirect(url_for("index"))
+    finally:
+        conn.close()
 
-        status_code, h1_content, title_content, meta_desc = fetch_seo_data(
-            url["name"]
-            )
-        if status_code is None:
-            flash("Не удалось проверить страницу", "error")
-            return redirect(url_for("get_url", id=id))
+    if not url:
+        flash("URL не найден", "error")
+        return redirect(url_for("index"))
 
+    status_code, h1_content, title_content, meta_desc = fetch_seo_data(
+        url["name"]
+        )
+    if status_code is None:
+        flash("Не удалось проверить страницу", "error")
+        return redirect(url_for("get_url", id=id))
+
+    conn = db.get_connection(app.config["DATABASE_URL"])
+    try:
         db.insert_check(
             conn, id, status_code, h1_content, title_content, meta_desc
             )
@@ -104,6 +122,7 @@ def post_check_url(id):
     except Exception as e:
         conn.rollback()
         flash(f"Ошибка проверки страницы: {e}", "error")
+        conn.close()
         return redirect(url_for("get_url", id=id))
     finally:
         conn.close()
