@@ -24,9 +24,7 @@ def get_all_urls(conn):
 
 def get_url_by_id(conn, url_id):
     with conn.cursor() as cur:
-        cur.execute(
-            "SELECT id, name, created_at FROM urls WHERE id = %s", [url_id]
-        )
+        cur.execute("SELECT id, name, created_at FROM urls WHERE id = %s", [url_id])
         return cur.fetchone()
 
 
@@ -48,8 +46,7 @@ def insert_url(conn, normalized_url):
     with conn.cursor() as cur:
         cur.execute(
             sql.SQL(
-                "INSERT INTO urls (name, created_at)"
-                "VALUES (%s, %s) RETURNING id"
+                "INSERT INTO urls (name, created_at)" "VALUES (%s, %s) RETURNING id"
             ),
             (normalized_url, datetime.now().strftime("%Y-%m-%d")),
         )
@@ -62,9 +59,7 @@ def get_url_by_name(conn, normalized_url):
         return cur.fetchone()
 
 
-def insert_check(
-        conn, url_id, status_code, h1_content, title_content, meta_desc
-        ):
+def insert_check(conn, url_id, status_code, h1_content, title_content, meta_desc):
     with conn.cursor() as cur:
         cur.execute(
             sql.SQL(

@@ -19,6 +19,7 @@ beautifulsoup4 = "^4.12.3"
 requests = "^2.32.3"
 psycopg2-binary = "^2.9.9"
 black = "^24.10.0"
+ruff = "^0.8.1"
 
 
 [tool.poetry.group.dev.dependencies]
