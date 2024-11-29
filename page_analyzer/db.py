@@ -1,5 +1,12 @@
+import psycopg2 as pg
 from psycopg2 import sql
+from psycopg2.extras import DictCursor
 from datetime import datetime
+
+
+def get_connection(database_url):
+    """Возвращает новое подключение к базе данных."""
+    return pg.connect(database_url, cursor_factory=DictCursor)
 
 
 def get_all_urls(conn):
