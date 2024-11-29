@@ -1,9 +1,11 @@
+import os
+
+import validators
 from dotenv import load_dotenv
-from flask import flash, Flask, redirect, render_template, request, url_for
+from flask import Flask, flash, redirect, render_template, request, url_for
+
 from page_analyzer import db
 from page_analyzer.utils import fetch_seo_data, normalize_url
-import os
-import validators
 
 load_dotenv()
 

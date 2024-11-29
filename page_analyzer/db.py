@@ -1,4 +1,5 @@
 from datetime import datetime
+
 import psycopg2 as pg
 from psycopg2 import sql
 from psycopg2.extras import DictCursor

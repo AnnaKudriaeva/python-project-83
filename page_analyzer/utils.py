@@ -1,7 +1,8 @@
+from urllib.parse import urlparse
+
+import requests
 from bs4 import BeautifulSoup
 from flask import flash
-import requests
-from urllib.parse import urlparse
 
 
 def normalize_url(url):
